@@ -1,0 +1,56 @@
+{
+  "format": 1,
+  "repository": "Oxeegen/OxeeLibrary",
+  "commit": "c31eb7984b42e86617079167ee854fd48c497a8d",
+  "items": [
+    {
+      "id": "document-assembler",
+      "type": "skill",
+      "version": "0.8.0",
+      "title": {
+        "en": "Document Assembler",
+        "fr": "Assembleur de documents"
+      },
+      "description": {
+        "en": "Assembles your notes, letters and PDFs into a single clean deliverable, with a table of contents and page numbers.",
+        "fr": "Assemble vos notes, courriers et PDF en un seul livrable soigné, avec sommaire et numérotation des pages."
+      },
+      "tags": [
+        "documents",
+        "docx",
+        "office",
+        "pdf"
+      ],
+      "keywords": {
+        "en": [
+          "combine",
+          "docx",
+          "merge",
+          "pagination",
+          "pdf",
+          "report",
+          "toc",
+          "word"
+        ],
+        "fr": [
+          "assemblage",
+          "fusion",
+          "pagination",
+          "pdf",
+          "rapport",
+          "sommaire",
+          "word"
+        ]
+      },
+      "author": "Oxeegen",
+      "min_app_version": null,
+      "path": "skills/document-assembler",
+      "files": [
+        "SKILL.md",
+        "oxeegen.yaml"
+      ],
+      "image": "assets/document-assembler.jpg",
+      "digest": "sha256:f06c8d0078a4e2a95225e3faedc7782f0b937f9507ae2ef112411fc23d00ef12"
+    }
+  ]
+}
