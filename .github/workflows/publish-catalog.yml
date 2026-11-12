@@ -1,9 +1,11 @@
 name: Publish the catalog
 
-# Every merge into main: build catalog.json from that commit and publish it as the asset of the
-# `catalog` release, where Oxee Hermes reads it:
-#   https://github.com/Oxeegen/OxeeLibrary/releases/download/catalog/catalog.json
-# The catalog names the commit, so the app downloads every item at that exact commit.
+# Every merge into main: build catalog.json from that commit and publish it alone on the `catalog`
+# branch, where Oxee Hermes reads it:
+#   https://raw.githubusercontent.com/Oxeegen/OxeeLibrary/catalog/catalog.json
+# (raw.githubusercontent.com answers the app's cross-origin fetch; a release download does not).
+# The branch holds one commit, replaced each time. The catalog names the main commit it was built
+# from, so the app shows every item at that exact commit.
 on:
   push:
     branches: [main]
@@ -29,12 +31,17 @@ jobs:
         run: pip install -r scripts/requirements.txt
       - name: Build catalog.json
         run: python scripts/build_catalog.py --out catalog.json --commit "$GITHUB_SHA"
-      - name: Publish it on the catalog release
+      - name: Remove the former catalog release (a tag named like the branch would make it ambiguous)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if ! gh release view catalog >/dev/null 2>&1; then
-            gh release create catalog --title "Catalog" --latest=false \
-              --notes "The catalog Oxee Hermes reads. Rebuilt on every merge into main; do not edit."
-          fi
-          gh release upload catalog catalog.json --clobber
+          if gh release view catalog >/dev/null 2>&1; then gh release delete catalog --cleanup-tag --yes; fi
+      - name: Publish it on the catalog branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir published && cp catalog.json published/ && cd published
+          git init -q -b catalog && git add catalog.json
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Catalog built from $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/catalog
