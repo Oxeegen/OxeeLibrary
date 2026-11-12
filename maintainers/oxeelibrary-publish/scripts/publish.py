@@ -85,6 +85,20 @@ def frontmatter(text: str) -> dict[str, str]:
     return fields
 
 
+def with_version(text: str, version: str) -> str:
+    """The SKILL.md with its frontmatter `version` set to the published one: Oxee Hermes reads an
+    installed skill's version there to offer the library's newer one."""
+    match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    if not match:
+        return text
+    body = match.group(1)
+    if re.search(r"^version:.*$", body, re.M):
+        body = re.sub(r"^version:.*$", f"version: {version}", body, count=1, flags=re.M)
+    else:
+        body = re.sub(r"^(name:.*)$", rf"\1\nversion: {version}", body, count=1, flags=re.M)
+    return text[:match.start(1)] + body + text[match.end(1):]
+
+
 def skill_files(folder: Path) -> list[Path]:
     """The skill's files, without caches and without a previous oxeegen.yaml (stage writes a new one)."""
     return sorted(p for p in folder.rglob("*")
@@ -277,6 +291,9 @@ def cmd_stage(args) -> int:
         shutil.copy2(path, target)
     if not check_meta(meta):
         (item / "oxeegen.yaml").write_text(meta_yaml(meta), encoding="utf-8")
+        skill_md = item / "SKILL.md"
+        if skill_md.exists():
+            skill_md.write_text(with_version(skill_md.read_text(encoding="utf-8"), meta["version"]), encoding="utf-8")
     (stage / "assets").mkdir()
     if args.image or args.placeholder:
         problems += make_visual(stage / "assets" / f"{item_id}.jpg", Path(args.image) if args.image else None,

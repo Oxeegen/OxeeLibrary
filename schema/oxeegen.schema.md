@@ -28,9 +28,9 @@ folder it sits in (`skills/` or `plugins/`).
 
 | File | Rule |
 |---|---|
-| `skills/<id>/SKILL.md` | Standard Agent Skills format. `name` is the folder name; `description` is one sentence, at most 60 characters, ending with a period (Hermes' own rule). |
+| `skills/<id>/SKILL.md` | Standard Agent Skills format. `name` is the folder name; `description` is one sentence, at most 60 characters, ending with a period (Hermes' own rule). `version` equals `oxeegen.yaml`'s: Oxee Hermes reads it on an installed skill to offer a newer one (the publish skill sets it). |
 | `plugins/<id>/plugin.yaml` | Hermes plugin manifest. `name` is the folder name. |
-| `assets/<id>.jpg` or `.png` | The catalog visual: 2:1 (e.g. 1200x600), at least 800 px wide, at most 500 KB. |
+| `assets/<id>.jpg` or `.png` | The catalog visual: 2:1 (e.g. 1200x600), at least 800 px wide, at most 500 KB. Its left half dark and empty, the subject on the right half, no text: Oxee Hermes sets the title, description, keywords and install button on the left half. |
 
 ## What the check refuses
 

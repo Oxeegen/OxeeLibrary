@@ -95,3 +95,14 @@ def test_a_new_version_removes_the_files_the_skill_dropped():
 
     deleted = sorted(e["path"] for e in entries if e["sha"] is None)
     assert deleted == ["assets/weekly-sales.png", "skills/weekly-sales/old.md"]
+
+
+def test_the_staged_skill_md_carries_the_published_version(tmp_path, skill, monkeypatch):
+    monkeypatch.setattr(pub, "current_version", lambda item_id: None)
+
+    assert stage(tmp_path, skill) == 0
+
+    staged = (tmp_path / "stage" / "skills" / "weekly-sales" / "SKILL.md").read_text(encoding="utf-8")
+    assert pub.frontmatter(staged)["version"] == "1.0.0"
+    assert pub.with_version("---\nname: x\nversion: 0.1.0\n---\nversion: 9.9.9\n", "2.0.0") == (
+        "---\nname: x\nversion: 2.0.0\n---\nversion: 9.9.9\n")
