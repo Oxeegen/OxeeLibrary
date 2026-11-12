@@ -17,7 +17,8 @@ metadata:
 
 # OxeeLibrary Publish Skill
 
-Takes a skill the user built and refined in Oxee Hermes and proposes it to the Oxeegen library
+A maintainer skill: it lives in `maintainers/` of the library, outside the catalog, and only
+Oxeegen maintainers install it (see `maintainers/README.md`). Takes a skill the user built and refined in Oxee Hermes and proposes it to the Oxeegen library
 (`Oxeegen/OxeeLibrary`) as a pull request, with its catalog texts in English and French and its
 visual. It never publishes directly: an Oxeegen maintainer reviews and merges the pull request,
 and only that merge makes the skill appear in every user's catalog.

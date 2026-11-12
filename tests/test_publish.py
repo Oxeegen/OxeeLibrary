@@ -16,7 +16,7 @@ def _load(name, path):
     return module
 
 
-pub = _load("publish", "skills/oxeelibrary-publish/scripts/publish.py")
+pub = _load("publish", "maintainers/oxeelibrary-publish/scripts/publish.py")
 bc = _load("build_catalog", "scripts/build_catalog.py")
 
 META = {
@@ -73,6 +73,13 @@ def test_a_personal_path_or_a_lower_version_blocks_the_stage(tmp_path, skill, mo
     (skill / "notes.md").unlink()
     assert stage(tmp_path, skill) == 1
     assert any("the library holds 1.2.0" in p for p in json.loads(capsys.readouterr().out)["problems"])
+
+
+def test_maintainer_skills_stay_out_of_the_catalog_but_are_checked():
+    catalog, problems = bc.build("c" * 40)
+
+    assert problems == []
+    assert "oxeelibrary-publish" not in [item["id"] for item in catalog["items"]]
 
 
 def test_the_leak_patterns_are_the_library_checks():

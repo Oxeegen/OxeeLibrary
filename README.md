@@ -8,6 +8,7 @@ and offers every item in its catalog, ready to install in one click.
 skills/<id>/        a skill: SKILL.md (standard Agent Skills format) + oxeegen.yaml
 plugins/<id>/       a Hermes plugin: plugin.yaml and its code + oxeegen.yaml
 assets/<id>.jpg     the item's catalog visual (2:1)
+maintainers/<id>/   skills for Oxeegen maintainers only: never in the catalog (see maintainers/README.md)
 schema/             what oxeegen.yaml holds
 scripts/            build_catalog.py: validates the items and builds catalog.json
 ```
@@ -21,7 +22,7 @@ Plugins are Hermes plugins and run in Oxee Hermes only.
 ## Publishing an item
 
 1. Create and refine the skill in Oxee Hermes.
-2. Ask the agent to publish it: it copies the item, checks that nothing personal is left in it,
+2. Ask the agent to publish it (with the `oxeelibrary-publish` maintainer skill installed): it copies the item, checks that nothing personal is left in it,
    asks for the catalog texts and visual, and opens a pull request here.
 3. The **Validate the library** check runs on the pull request: complete metadata, a 2:1 visual,
    a valid `SKILL.md` or `plugin.yaml`, no personal path, key or token.

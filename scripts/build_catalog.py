@@ -193,6 +193,14 @@ def build(commit: str = "") -> tuple[dict, list[str]]:
                     problems.append(f"{folder_name}/{folder.name}: the id is already used by another item")
                 seen.add(entry["id"])
                 items.append(entry)
+    # Maintainer skills: installed by hand by Oxeegen maintainers, never in the catalog, but held to
+    # the same SKILL.md rules and the same leak scan.
+    maintainers = ROOT / "maintainers"
+    for folder in sorted(p for p in maintainers.iterdir() if p.is_dir()) if maintainers.is_dir() else []:
+        found: list[str] = []
+        _native("skill", folder, folder.name, found)
+        _leaks(folder, found)
+        problems += [f"maintainers/{folder.name}: {p}" for p in found]
     for asset in sorted((ROOT / "assets").glob("*")):
         if asset.is_file() and asset.stem not in seen and asset.name != ".gitkeep":
             problems.append(f"assets/{asset.name}: no item named {asset.stem!r}")
