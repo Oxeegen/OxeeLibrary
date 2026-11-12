@@ -1,0 +1,12 @@
+version: 0.8.0
+author: "Oxeegen"
+title:
+  en: "Document Assembler"
+  fr: "Assembleur de documents"
+description:
+  en: "Assembles your notes, letters and PDFs into a single clean deliverable, with a table of contents and page numbers."
+  fr: "Assemble vos notes, courriers et PDF en un seul livrable soigné, avec sommaire et numérotation des pages."
+tags: [documents, pdf, docx, office]
+keywords:
+  en: ["merge", "combine", "pdf", "docx", "word", "report", "toc", "pagination"]
+  fr: ["fusion", "assemblage", "pdf", "word", "rapport", "sommaire", "pagination"]
