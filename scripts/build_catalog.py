@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Validate every item of the library and build catalog.json, the index Oxee Hermes reads.
 
-    python scripts/build_catalog.py           # validate, then write catalog.json
-    python scripts/build_catalog.py --check   # validate, and fail if catalog.json is out of date (CI)
+    python scripts/build_catalog.py --check                          # validate only (pull requests)
+    python scripts/build_catalog.py --out catalog.json --commit SHA  # validate, then build
 
 An item is a folder skills/<id>/ (a SKILL.md, standard Agent Skills format) or plugins/<id>/ (a
 Hermes plugin.yaml), plus its oxeegen.yaml (the catalog metadata, see schema/oxeegen.schema.md)
-and its visual assets/<id>.jpg|png. catalog.json holds no date, so building it twice gives the same
-file; each entry carries a digest of the item's files, which the app checks after download.
+and its visual assets/<id>.jpg|png. catalog.json is not kept in the repository: every merge into
+main publishes it as the asset of the `catalog` release (.github/workflows/publish-catalog.yml).
+It names the commit it was built from, so the app downloads each item's files at that exact commit;
+each entry lists its files and a digest of them, which the app checks after download.
 """
 
 from __future__ import annotations
@@ -23,7 +25,6 @@ import yaml
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "catalog.json"
 FORMAT = 1
 KINDS = {"skills": "skill", "plugins": "plugin"}
 LANGS = ("en", "fr")
@@ -173,13 +174,14 @@ def build_item(kind: str, folder: Path) -> tuple[dict | None, list[str]]:
         "author": str(author or ""),
         "min_app_version": str(min_app) if min_app else None,
         "path": folder.relative_to(ROOT).as_posix(),
+        "files": [p.relative_to(folder).as_posix() for p in _files(folder)],
         "image": image,
         "digest": digest(folder),
     }
     return entry, problems
 
 
-def build() -> tuple[dict, list[str]]:
+def build(commit: str = "") -> tuple[dict, list[str]]:
     items, problems = [], []
     seen: set[str] = set()
     for folder_name, kind in KINDS.items():
@@ -191,31 +193,40 @@ def build() -> tuple[dict, list[str]]:
                     problems.append(f"{folder_name}/{folder.name}: the id is already used by another item")
                 seen.add(entry["id"])
                 items.append(entry)
+    # Maintainer skills: installed by hand by Oxeegen maintainers, never in the catalog, but held to
+    # the same SKILL.md rules and the same leak scan.
+    maintainers = ROOT / "maintainers"
+    for folder in sorted(p for p in maintainers.iterdir() if p.is_dir()) if maintainers.is_dir() else []:
+        found: list[str] = []
+        _native("skill", folder, folder.name, found)
+        _leaks(folder, found)
+        problems += [f"maintainers/{folder.name}: {p}" for p in found]
     for asset in sorted((ROOT / "assets").glob("*")):
         if asset.is_file() and asset.stem not in seen and asset.name != ".gitkeep":
             problems.append(f"assets/{asset.name}: no item named {asset.stem!r}")
-    return {"format": FORMAT, "items": items}, problems
+    return {"format": FORMAT, "repository": "Oxeegen/OxeeLibrary", "commit": commit, "items": items}, problems
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--check", action="store_true", help="fail if catalog.json is not the one this tree builds")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--check", action="store_true", help="validate every item, write nothing")
+    mode.add_argument("--out", type=Path, help="where to write catalog.json")
+    parser.add_argument("--commit", default="", help="the commit the catalog is built from (with --out)")
     args = parser.parse_args(argv)
 
-    catalog, problems = build()
+    if args.out and not re.fullmatch(r"[0-9a-f]{40}", args.commit):
+        parser.error("--out needs --commit <40-hex sha>")
+    catalog, problems = build(args.commit)
     for problem in problems:
-        print(f"::error::{problem}" if args.check else f"error: {problem}")
+        print(f"::error::{problem}")
     if problems:
         return 1
-    text = json.dumps(catalog, ensure_ascii=False, indent=2) + "\n"
     if args.check:
-        if not CATALOG.exists() or CATALOG.read_text(encoding="utf-8") != text:
-            print("::error::catalog.json is out of date: run python scripts/build_catalog.py and commit it")
-            return 1
-        print(f"catalog.json is up to date ({len(catalog['items'])} items)")
+        print(f"{len(catalog['items'])} item(s) valid")
         return 0
-    CATALOG.write_text(text, encoding="utf-8")
-    print(f"wrote catalog.json ({len(catalog['items'])} items)")
+    args.out.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {args.out} ({len(catalog['items'])} items, commit {args.commit[:8]})")
     return 0
 
 

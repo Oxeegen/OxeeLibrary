@@ -1,0 +1,40 @@
+name: Publish the catalog
+
+# Every merge into main: build catalog.json from that commit and publish it as the asset of the
+# `catalog` release, where Oxee Hermes reads it:
+#   https://github.com/Oxeegen/OxeeLibrary/releases/download/catalog/catalog.json
+# The catalog names the commit, so the app downloads every item at that exact commit.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-catalog
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish catalog.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install the checker's dependencies
+        run: pip install -r scripts/requirements.txt
+      - name: Build catalog.json
+        run: python scripts/build_catalog.py --out catalog.json --commit "$GITHUB_SHA"
+      - name: Publish it on the catalog release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view catalog >/dev/null 2>&1; then
+            gh release create catalog --title "Catalog" --latest=false \
+              --notes "The catalog Oxee Hermes reads. Rebuilt on every merge into main; do not edit."
+          fi
+          gh release upload catalog catalog.json --clobber
