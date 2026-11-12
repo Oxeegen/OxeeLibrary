@@ -29,7 +29,6 @@ def library(tmp_path, monkeypatch):
     for folder in ("skills", "plugins", "assets"):
         (tmp_path / folder).mkdir()
     monkeypatch.setattr(bc, "ROOT", tmp_path)
-    monkeypatch.setattr(bc, "CATALOG", tmp_path / "catalog.json")
     return tmp_path
 
 
@@ -55,17 +54,23 @@ def test_a_complete_skill_enters_the_catalog(library):
     assert entry["digest"].startswith("sha256:")
 
 
-def test_catalog_is_reproducible_and_check_catches_a_stale_one(library):
+def test_catalog_names_its_commit_and_each_item_lists_its_files(library, tmp_path):
     folder = add_skill(library)
-    assert bc.main([]) == 0
-    first = (library / "catalog.json").read_text(encoding="utf-8")
+    sha = "a" * 40
+    out = tmp_path / "out.json"
+
     assert bc.main(["--check"]) == 0
+    assert bc.main(["--out", str(out), "--commit", sha]) == 0
+    first = json.loads(out.read_text(encoding="utf-8"))
+    assert first["commit"] == sha
+    assert first["items"][0]["files"] == ["SKILL.md", "oxeegen.yaml"]
 
+    # Same tree, same catalog; a changed file, a changed digest.
+    assert bc.main(["--out", str(out), "--commit", sha]) == 0
+    assert json.loads(out.read_text(encoding="utf-8")) == first
     (folder / "SKILL.md").write_text(SKILL + "\nOne more step.\n", encoding="utf-8")
-
-    assert bc.main(["--check"]) == 1
-    assert bc.main([]) == 0
-    assert json.loads(first)["items"][0]["digest"] != json.loads((library / "catalog.json").read_text())["items"][0]["digest"]
+    assert bc.main(["--out", str(out), "--commit", sha]) == 0
+    assert json.loads(out.read_text(encoding="utf-8"))["items"][0]["digest"] != first["items"][0]["digest"]
 
 
 @pytest.mark.parametrize(

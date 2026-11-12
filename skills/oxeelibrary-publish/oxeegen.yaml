@@ -1,0 +1,12 @@
+version: 1.0.0
+author: "Oxeegen"
+title:
+  en: "Publish to the Oxeegen library"
+  fr: "Publier dans la bibliothèque Oxeegen"
+description:
+  en: "Proposes one of your skills to Oxeegen users: checks it, writes its catalog texts in English and French, and opens a pull request."
+  fr: "Propose l’une de vos skills aux utilisateurs Oxeegen : la vérifie, rédige ses textes de catalogue en français et en anglais, et ouvre une pull request."
+tags: [oxeegen, publishing, skills]
+keywords:
+  en: ["publish", "share", "catalog", "library"]
+  fr: ["publier", "partager", "catalogue", "bibliothèque"]
