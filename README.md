@@ -1,7 +1,7 @@
 # OxeeLibrary
 
 The skills and plugins Oxeegen publishes for [Oxee Hermes](https://github.com/Oxeegen/OxeeHermes).
-Oxee Hermes reads the catalog published on the [`catalog` release](https://github.com/Oxeegen/OxeeLibrary/releases/tag/catalog)
+Oxee Hermes reads the catalog published on the [`catalog` branch](https://github.com/Oxeegen/OxeeLibrary/blob/catalog/catalog.json)
 and offers every item in its catalog, ready to install in one click.
 
 ```
@@ -28,7 +28,7 @@ Plugins are Hermes plugins and run in Oxee Hermes only.
    a valid `SKILL.md` or `plugin.yaml`, no personal path, key or token.
 4. A maintainer reviews and merges. Nothing reaches users before that merge: `main` only accepts
    pull requests that pass the check. The merge publishes the new `catalog.json` on the `catalog`
-   release (**Publish the catalog** workflow); it names the merged commit, and the app installs
+   branch (**Publish the catalog** workflow); it names the merged commit, and the app installs
    every item from that exact commit.
 
 To publish a new version of an item, change it, bump `version` in its `oxeegen.yaml`, and open a

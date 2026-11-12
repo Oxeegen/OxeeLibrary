@@ -6,8 +6,8 @@
 
 An item is a folder skills/<id>/ (a SKILL.md, standard Agent Skills format) or plugins/<id>/ (a
 Hermes plugin.yaml), plus its oxeegen.yaml (the catalog metadata, see schema/oxeegen.schema.md)
-and its visual assets/<id>.jpg|png. catalog.json is not kept in the repository: every merge into
-main publishes it as the asset of the `catalog` release (.github/workflows/publish-catalog.yml).
+and its visual assets/<id>.jpg|png. catalog.json is not kept on main: every merge into main
+publishes it alone on the `catalog` branch (.github/workflows/publish-catalog.yml).
 It names the commit it was built from, so the app downloads each item's files at that exact commit;
 each entry lists its files and a digest of them, which the app checks after download.
 """
