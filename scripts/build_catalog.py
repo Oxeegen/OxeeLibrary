@@ -97,7 +97,7 @@ def _image(item_id: str, problems: list[str]) -> str:
     return path.relative_to(ROOT).as_posix()
 
 
-def _native(kind: str, folder: Path, item_id: str, problems: list[str]) -> None:
+def _native(kind: str, folder: Path, item_id: str, version: str | None, problems: list[str]) -> None:
     if kind == "skill":
         skill = folder / "SKILL.md"
         if not skill.exists():
@@ -109,6 +109,10 @@ def _native(kind: str, folder: Path, item_id: str, problems: list[str]) -> None:
         description = str(front.get("description") or "")
         if not description or len(description) > SKILL_DESCRIPTION_MAX or not description.endswith("."):
             problems.append(f"SKILL.md: description must be one sentence ending with a period, at most {SKILL_DESCRIPTION_MAX} characters")
+        # Oxee Hermes reads an installed skill's version from its SKILL.md to offer the library's
+        # newer one, so the two must agree (maintainer skills, outside the catalog, have no oxeegen.yaml).
+        if version is not None and str(front.get("version", "")) != version:
+            problems.append(f"SKILL.md: version is {front.get('version')!r}, must be oxeegen.yaml's {version!r}")
     else:
         manifest = folder / "plugin.yaml"
         if not manifest.exists():
@@ -160,7 +164,7 @@ def build_item(kind: str, folder: Path) -> tuple[dict | None, list[str]]:
     title = _localized(meta, "title", problems, 60)
     description = _localized(meta, "description", problems, CATALOG_DESCRIPTION_MAX)
     image = _image(item_id, problems)
-    _native(kind, folder, item_id, problems)
+    _native(kind, folder, item_id, version, problems)
     _leaks(folder, problems)
 
     entry = {
@@ -198,7 +202,7 @@ def build(commit: str = "") -> tuple[dict, list[str]]:
     maintainers = ROOT / "maintainers"
     for folder in sorted(p for p in maintainers.iterdir() if p.is_dir()) if maintainers.is_dir() else []:
         found: list[str] = []
-        _native("skill", folder, folder.name, found)
+        _native("skill", folder, folder.name, None, found)
         _leaks(folder, found)
         problems += [f"maintainers/{folder.name}: {p}" for p in found]
     for asset in sorted((ROOT / "assets").glob("*")):

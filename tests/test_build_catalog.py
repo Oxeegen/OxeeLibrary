@@ -21,7 +21,7 @@ description:
 tags: [sales, reporting]
 keywords: {en: [revenue], fr: [chiffre d'affaires]}
 """
-SKILL = "---\nname: weekly-sales\ndescription: Builds the weekly sales summary.\n---\n\n# Weekly Sales Skill\n"
+SKILL = "---\nname: weekly-sales\ndescription: Builds the weekly sales summary.\nversion: 1.0.0\n---\n\n# Weekly Sales Skill\n"
 
 
 @pytest.fixture
@@ -90,3 +90,12 @@ def test_an_incomplete_or_leaky_skill_is_refused(library, meta, skill, size, exp
     _, problems = bc.build()
 
     assert any(expected in p for p in problems), problems
+
+
+def test_the_skill_md_version_must_be_the_catalog_version(library):
+    # Oxee Hermes reads an installed skill's version from its SKILL.md to offer a newer one.
+    add_skill(library, skill=SKILL.replace("version: 1.0.0", "version: 0.9.0"))
+
+    _, problems = bc.build()
+
+    assert problems == ["skills/weekly-sales: SKILL.md: version is '0.9.0', must be oxeegen.yaml's '1.0.0'"]
